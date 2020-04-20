@@ -9,7 +9,7 @@ output reg  o_press
 );
 
 integer counter=0;
-parameter clockCount = $floor(`minPulseWidth*`clockFreq);
+parameter clockCount = 1000000;
 
 always @(posedge i_clk)
 begin
