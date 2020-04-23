@@ -7,16 +7,16 @@
 
 #include "video.h"
 
+/*****************************************************************************/
+/* Function to initialize the vDMA system
+******************************************************************************/
 
-
-int initVideo(char *Buffer){
+int initVideo(u32 deviceId,char *Buffer,XScuGic* Intc){
 	int status;
 	int Index;
 	u32 Addr;
-	XScuGic Intc;
 	XAxiVdma myVDMA;
-	initIntrController(&Intc);
-	XAxiVdma_Config *config = XAxiVdma_LookupConfig(XPAR_AXI_VDMA_0_DEVICE_ID);
+	XAxiVdma_Config *config = XAxiVdma_LookupConfig(deviceId);
 	status = XAxiVdma_CfgInitialize(&myVDMA, config, config->BaseAddress);
     if(status != XST_SUCCESS){
     	xil_printf("DMA Initialization failed");
@@ -50,7 +50,7 @@ int initVideo(char *Buffer){
  		return XST_FAILURE;
  	}
  	XAxiVdma_IntrEnable(&myVDMA, XAXIVDMA_IXR_COMPLETION_MASK, XAXIVDMA_READ);
- 	SetupVideoIntrSystem(&myVDMA, XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR,&Intc);
+ 	SetupVideoIntrSystem(&myVDMA, XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR,Intc);
 
  	status = XAxiVdma_DmaStart(&myVDMA,XAXIVDMA_READ);
  	if (status != XST_SUCCESS) {
@@ -85,23 +85,6 @@ static void ReadErrorCallBack(void *CallbackRef, u32 Mask)
 	/* User can add his code in this call back function */
 	xil_printf("Read Call back Error function is called\r\n");
 
-}
-
-int initIntrController(XScuGic *IntcInstancePtr){
-	int Status;
-	XScuGic_Config *IntcConfig;
-	IntcConfig = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
-	Status =  XScuGic_CfgInitialize(IntcInstancePtr, IntcConfig, IntcConfig->CpuBaseAddress);
-	if(Status != XST_SUCCESS){
-		xil_printf("Interrupt controller initialization failed..");
-		return -1;
-	}
-
-	Xil_ExceptionInit();
-	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,(Xil_ExceptionHandler)XScuGic_InterruptHandler,(void *)IntcInstancePtr);
-	Xil_ExceptionEnable();
-
-	return XST_SUCCESS;
 }
 
 

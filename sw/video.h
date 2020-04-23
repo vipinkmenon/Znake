@@ -18,10 +18,8 @@
 #define FrameSize HSize*VSize*3
 
 
-int initVideo(char *Buffer);
-int initIntrController(XScuGic *Intc);
+int initVideo(u32 deviceId,char *Buffer,XScuGic* Intc);
 int SetupVideoIntrSystem(XAxiVdma *AxiVdmaPtr, u16 ReadIntrId, XScuGic *Intc);
-//void ReadCallBack(void *CallbackRef, u32 Mask);
 
 #endif /* SRC_VIDEO_H_ */
 

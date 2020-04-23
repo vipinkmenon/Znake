@@ -19,12 +19,27 @@ int initZnake(znake* myZnake, u32 snakeTrackBaseAddress,u32 timerBaseAddress, u3
 	return 0;
 }
 
+int initIntrController(u32 deviceId, XScuGic *IntcInstancePtr){
+	int Status;
+	XScuGic_Config *IntcConfig;
+	IntcConfig = XScuGic_LookupConfig(deviceId);
+	Status =  XScuGic_CfgInitialize(IntcInstancePtr, IntcConfig, IntcConfig->CpuBaseAddress);
+	if(Status != XST_SUCCESS){
+		xil_printf("Interrupt controller initialization failed..");
+		return -1;
+	}
+
+	Xil_ExceptionInit();
+	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,(Xil_ExceptionHandler)XScuGic_InterruptHandler,(void *)IntcInstancePtr);
+	Xil_ExceptionEnable();
+
+	return XST_SUCCESS;
+}
+
 
 void showGameOver(znake *myZnake){
-	char *myString = "Game Over!!";
-	printString(HSize,VSize,(char *)myString,80,VSize/3,20,redColor,myZnake->Buffer);
-	char *myString1 = "Press Centre Button to Continue..";
-	printString(HSize,VSize,(char *)myString1,30,VSize/2+30,7,redColor,myZnake->Buffer);
+	printString(HSize,VSize,(char *)"Game Over!!",80,VSize/3,20,redColor,myZnake->Buffer);
+	printString(HSize,VSize,(char *)"Press Centre Button to Continue..",30,VSize/2+30,7,redColor,myZnake->Buffer);
 }
 
 void showWelcome(znake *myZnake){
@@ -34,10 +49,9 @@ void showWelcome(znake *myZnake){
 	#else
 		memset(myZnake->Buffer,blackColor,FrameSize);
 	#endif
-	char *myString = "Znake";
 	char stringSize = 5;
 	char zoom=20;
-	printString(HSize,VSize,(char *)myString,(HSize-stringSize*8*zoom)/2,VSize/3,zoom,redColor,myZnake->Buffer);
+	printString(HSize,VSize,(char *)"Znake",(HSize-stringSize*8*zoom)/2,VSize/3,zoom,redColor,myZnake->Buffer);
 	for(int i=3;i>0;i--){
 		sprintf(count, "%d",i);
 		printString(HSize,VSize,(char *)count,(HSize-8*zoom)/2,2*VSize/3,zoom,redColor,myZnake->Buffer);
@@ -70,11 +84,11 @@ int checkGameOver(u8 xPos, u8 yPos){
 
 void drawPrey(znake *myZnake,u8 *preyX,u8 *preyY ){
 	u16 pos;
-	srand(Xil_In32(XPAR_TIMER_0_S00_AXI_BASEADDR));
+	srand(Xil_In32(myZnake->EventTimerBaseAddress));
 	*preyX = rand()%(frameHSize)+frameHOffset+borderWidth;
 	*preyY = rand()%(frameVSize)+frameVOffset+borderWidth;
 	pos = *preyX|(*preyY<<8);
-	Xil_Out16(XPAR_SNAKETRACKER_0_S00_AXI_BASEADDR+4,pos);
+	Xil_Out16(myZnake->BaseAddress+4,pos);
 	drawSquare(*preyX,*preyY,gridSize,HSize,myZnake->Buffer,preyColor);
 }
 
@@ -85,10 +99,10 @@ void waitRestart(znake *myZnake){
 
 void checkPause(znake *myZnake){
 	u32 status;
-	status = Xil_In32(XPAR_AXI_GPIO_0_BASEADDR);
+	status = Xil_In32(myZnake->GPIOBaseAddress);
 	if(status){
 		stopEventTimer(myZnake);
-		while(Xil_In32(XPAR_AXI_GPIO_0_BASEADDR));  //Wait until button is released
+		while(Xil_In32(myZnake->GPIOBaseAddress));  //Wait until button is released
 		startEventTimer(myZnake);
 	}
 }
