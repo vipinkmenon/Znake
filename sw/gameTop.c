@@ -60,11 +60,7 @@ int main(){
 				pos = getSnakeSegment(&myZnake); //draw the body
 				xPos = pos&0xff;
 				yPos = (pos&0xff00)>>8;
-			#ifdef whiteMode
 				drawSquare(xPos,yPos,gridSize,HSize,Buffer,snakeColor);
-			#else
-				drawSquare(xPos,yPos,gridSize,HSize,Buffer,snakeColor);
-			#endif
 			}
 			if(checkPreyInBody(&myZnake)){//check whether prey in the body
 				preyPos=getPreyPosition(&myZnake);
@@ -80,11 +76,7 @@ int main(){
 			xPos = pos&0xff;
 			yPos = (pos&0xff00)>>8;
 			if((hxPos==preyX) && (hyPos==preyY)){//Check whether snake swallowed the prey
-				#ifdef whiteMode
-					drawSquare(xPos,yPos,gridSize,HSize,Buffer,snakeColor); //Add additional cell to tail
-				#else
-					drawSquare(xPos,yPos,gridSize,HSize,Buffer,snakeColor);
-				#endif
+				drawSquare(xPos,yPos,gridSize,HSize,Buffer,snakeColor);
 				snakeSize++;                                     //Increase snake size
 				updateSnakeSize(&myZnake,snakeSize);             //Update the snake size in snake tracker
 				preyPos=getPreyPosition(&myZnake);
