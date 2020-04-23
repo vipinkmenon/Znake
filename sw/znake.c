@@ -82,14 +82,20 @@ int checkGameOver(u8 xPos, u8 yPos){
 	return 0;
 }
 
-void drawPrey(znake *myZnake,u8 *preyX,u8 *preyY ){
+u16 getPreyPosition(znake *myZnake){
 	u16 pos;
+	u8 preyX;
+	u8 preyY;
 	srand(Xil_In32(myZnake->EventTimerBaseAddress));
-	*preyX = rand()%(frameHSize)+frameHOffset+borderWidth;
-	*preyY = rand()%(frameVSize)+frameVOffset+borderWidth;
-	pos = *preyX|(*preyY<<8);
-	Xil_Out16(myZnake->BaseAddress+4,pos);
-	drawSquare(*preyX,*preyY,gridSize,HSize,myZnake->Buffer,preyColor);
+	preyX = rand()%(frameHSize)+frameHOffset+borderWidth;
+	preyY = rand()%(frameVSize)+frameVOffset+borderWidth;
+	pos = preyX|(preyY<<8);
+	return pos;
+}
+
+void drawPrey(znake *myZnake,u8 xPos,u8 yPos ){
+	Xil_Out16(myZnake->BaseAddress+4,(xPos|(yPos<<8)));
+	drawSquare(xPos,yPos,gridSize,HSize,myZnake->Buffer,preyColor);
 }
 
 void waitRestart(znake *myZnake){

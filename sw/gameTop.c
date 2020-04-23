@@ -17,6 +17,7 @@ int main(){
 	u8 preyX;
 	u8 preyY;
 	u16 pos;
+	u16 preyPos;
 	u8 xPos;
 	u8 yPos;
 	u8 hxPos;
@@ -42,7 +43,10 @@ int main(){
 		loadTimer(&myZnake,delayValue);
 		startEventTimer(&myZnake); //Start the even timer
 		resetSnakeTracker(&myZnake);
-		drawPrey(&myZnake,&preyX,&preyY);
+		preyPos=getPreyPosition(&myZnake);
+		preyX = preyPos&0xff;
+		preyY = (preyPos&0xff00)>>8;
+		//drawPrey(&myZnake,preyX,preyY);
 		while(1){
 			restartSnakeTracker(&myZnake); //reset the internal read pointer
 			pos = getSnakeSegment(&myZnake); //Get the snake head position
@@ -63,7 +67,10 @@ int main(){
 			#endif
 			}
 			if(checkPreyInBody(&myZnake)){//check whether prey in the body
-				drawPrey(&myZnake,&preyX,&preyY); //If prey in the board, reposition the prey
+				preyPos=getPreyPosition(&myZnake);
+				preyX = preyPos&0xff;
+				preyY = (preyPos&0xff00)>>8;
+				//drawPrey(&myZnake,preyX,preyY);
 				clearPreyInBody(&myZnake); //Clear the bit in the snake tracker
 			}
 			if(headHitBody(&myZnake)){ //Check whether head of snake hit the body
@@ -80,7 +87,10 @@ int main(){
 				#endif
 				snakeSize++;                                     //Increase snake size
 				updateSnakeSize(&myZnake,snakeSize);             //Update the snake size in snake tracker
-				drawPrey(&myZnake,&preyX,&preyY);                //Draw a new prey
+				preyPos=getPreyPosition(&myZnake);
+				preyX = preyPos&0xff;
+				preyY = (preyPos&0xff00)>>8;
+				//drawPrey(&myZnake,preyX,preyY);
 				score++;                                         //Increment the score
 				updateScore(&myZnake,score);                     //Update the score on screen
 				if(score%scoreIncrementSize == 0){               //Once snake catches 10 preys double the speed
@@ -102,7 +112,8 @@ int main(){
 				drawSquare(xPos,yPos,gridSize,HSize,Buffer,whiteColor);
 			#else
 				drawSquare(xPos,yPos,gridSize,HSize,Buffer,blackColor);
-				#endif
+			#endif
+			drawPrey(&myZnake,preyX,preyY);
 			checkPause(&myZnake);
 		}
 		showGameOver(&myZnake);
